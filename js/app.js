@@ -1,27 +1,3 @@
-//--------------------------------------------------//
-class Node{
-    constructor(data){
-        this.data = data;
-        this.children = []
-    }
-
-    add(data){
-        this.children.play(new Node(data));
-    }
-
-    remove(data){
-        this.children = this.children.filter((node)=>{
-            return node.data !== data;
-        })
-    }
-}
-
-
-
-
-
-
-//--------------------------------------------------//
 const redCircle = "🔴"
 const redCircleKing = "🟥"
 const whiteCircle = "⚪"
@@ -57,12 +33,16 @@ const player2 = {
 const boardElement = document.querySelector(".board")
 const messageElement = document.querySelector('.message')
 const results = document.querySelectorAll(".results")
+const helpButtonElement = document.querySelector("#help")
+const resetButtonElement = document.querySelector("#reset")
+let tilesElements = []
 let board = []
+let originalBoard = []
 let selectedTile = false
 let blackTiles = []
 let playerTurn = 'r'
-let elementStoneOptions = {}
 let elementStoneOptionsTemp = []
+let winner = false
 
 const updateMessage = ()=>{
     if(playerTurn === player1.symbol)
@@ -79,35 +59,80 @@ const updateResult = ()=>{
 updateMessage()
 updateResult()
 //------------Create the board and tiles------------------//
-let tileID = 0
-for (let i = 0; i < GRID_SIZE; i++) {
-    let line = []
-    for (let j = 0; j < GRID_SIZE; j++) {
-        let tempTile = document.createElement("div");
-        if((i+j)%2 === 0) {
-            tempTile.style.backgroundColor = "white"
-            line.push("")
-        }else{
-            tempTile.style.backgroundColor = "black"
-            if(board.length < 3){
-                tempTile.textContent = whiteCircle
-                line.push("w")
-            }
-            else if (board.length > 4){
-                tempTile.textContent = redCircle
-                line.push("r")
-            }else{
-                line.push("")
-            }
+
+function restart(){
+    for (let i = 0; i < GRID_SIZE; i++) {
+        for (let j = 0; j < GRID_SIZE; j++) {
+            board[j][i] === originalBoard[j][i]
         }
-        tempTile.className = "tile";
-        tempTile.id = tileID;
-        boardElement.appendChild(tempTile);
-        tileID+=1;
     }
-    board.push(line)
+    selectedTile = false
+    blackTiles = []
+    playerTurn = 'r'
+    elementStoneOptionsTemp = []
+    winner = false
+    player1.point = 0
+    player2.point = 0
+    updateMessage()
+    updateResult()
+}
+function createBoard(){
+    let tileID = 0
+    for (let i = 0; i < GRID_SIZE; i++) {
+        let line = []
+        let lineOrigin = []
+        for (let j = 0; j < GRID_SIZE; j++) {
+            let tempTile = document.createElement("div");
+            if((i+j)%2 === 0) {
+                tempTile.style.backgroundColor = "rgb(255, 221, 9)"
+                line.push("")
+                lineOrigin.push("")
+            }else{
+                tempTile.style.backgroundColor = "black"
+                if(board.length < 3){
+                    // tempTile.textContent = whiteCircle
+                    line.push("w")
+                    lineOrigin.push("w")
+                }
+                else if (board.length > 4){
+                    // tempTile.textContent = redCircle
+                    line.push("r")
+                    lineOrigin.push("r")
+                }else{
+                    line.push("")
+                    lineOrigin.push("")
+                }
+            }
+            if(tilesElements.length === 64){
+                
+            }
+            tempTile.className = "tile";
+            tempTile.id = tileID;
+            boardElement.appendChild(tempTile);
+            tileID+=1;
+        }
+        board.push(line)
+        originalBoard.push(lineOrigin)
+    }
+    tilesElements = document.querySelectorAll(".tile")
 }
 
+function addStone(){
+    for (let i = 0; i < GRID_SIZE; i++) {
+        for (let j = 0; j < GRID_SIZE; j++) {
+            let tempIndex = getIndex([j,i])
+            if(originalBoard[j][i] === player1.symbol){
+                tilesElements[tempIndex].textContent = player1.circle
+            }else if(originalBoard[j][i] === player2.symbol){
+                tilesElements[tempIndex].textContent = player2.circle
+            }else{
+                tilesElements[tempIndex].textContent = ""
+            }
+        }
+    }
+}
+createBoard()
+addStone()
 
 //--- Helper function to get the list indexs of a certin player ---//
 function getListOfIndexs(player){
@@ -122,19 +147,6 @@ function getListOfIndexs(player){
     }
     return listOfIndex;
 }
-
-
-let tilesElements = document.querySelectorAll(".tile")
-// console.log(board);
-board[0][3] = ''
-board[1][2] = 'r'
-tilesElements[getIndex([0,3])].textContent = ""
-tilesElements[getIndex([1,2])].textContent = redCircle
-
-board[7][2] = ''
-board[6][1] = 'w'
-tilesElements[getIndex([7,2])].textContent = ""
-tilesElements[getIndex([6,1])].textContent = whiteCircle
 
 
 function getPoseFromIndex(index){
@@ -158,16 +170,23 @@ function getKeyByValue(object, value){
     return Object.key(object).find(key=> object[key] === value)
 }
 
+function checkWithinBoundry(x,y){
+    if(x>=0 && y >=0 && x<=(GRID_SIZE-1) && y <=(GRID_SIZE-1))
+        return true
+    else {
+        return false
+    }
+}
 
 function checkNeighbor(pose, direction, opponent, depth=0){
+    if (depth > 3) return;
     if(depth === 0 ){
         elementStoneOptionsTemp.push({id: getIndex([pose[1],pose[0]]), parentId: null})
     }
     for(i=-1; i <=1; i+=2){
-        let x = pose[0]+i
-        let y = pose[1]+direction
-        console.log("Here ", getIndex([pose[1],pose[0]]))
-        if(x>=0 && y >=0 && x<=7 && y <=7 && depth<= 3){
+        const x = pose[0]+i
+        const y = pose[1]+direction
+        if(checkWithinBoundry(x,y) && depth<= 3){
             let neighbot = [y,x]
             if(board[y][x] === "" && depth === 0){
                 let neighborIndex = getIndex(neighbot)
@@ -177,20 +196,16 @@ function checkNeighbor(pose, direction, opponent, depth=0){
             }
             else if(board[y][x].toLowerCase() === opponent) {
                 elementStoneOptionsTemp.push({id: getIndex([y,x]), parentId: getIndex([pose[1],pose[0]])})
-                let x1 = x +i
-                let y1 = y + direction
-                if(x1>=0 && y1>=0 && x1<=7 && y1<=7){
-                    let neighbot = [y1,x1]
-                    let neighborIndex1 = getIndex(neighbot)
-                    console.log(y1,x1)
-                    console.log("AAAAAA",neighborIndex1)
+                const x1 = x +i
+                const y1 = y + direction
+                if(checkWithinBoundry(x1,y1)){
+                    const neighbot = [y1,x1]
+                    const neighborIndex1 = getIndex(neighbot)
                     elementStoneOptionsTemp.push({id: neighborIndex1, parentId: getIndex([y,x])})
                     if(board[y1][x1] === "")
                     {
                         tilesElements[neighborIndex1].style.backgroundColor="red"
                         blackTiles.push(neighborIndex1)
-                        elementStoneOptions[neighborIndex1] = getIndex([y,x])
-                        // elementStoneOptionsTemp.push({id: neighborIndex1, parentId: getIndex([y,x])})
                         // this is a recursive
                         depth+=1;
                         checkNeighbor([x1,y1], direction, opponent, depth + 1)
@@ -207,12 +222,11 @@ function changeListToOrigin(){
     }
     blackTiles = []
 }
+
 function getNeighbor(index, player){
     let pose = getPoseFromIndex(index)
     changeListToOrigin()
-    // console.log(board[pose[1]][pose[0]])
     if(board[pose[1]][pose[0]] === player.symbol.toUpperCase()){
-        // console.log("Move King")
         checkNeighbor(pose,player.direction, player.nextTurnSymbol)
         checkNeighbor(pose,player.direction * -1, player.nextTurnSymbol)
     }else{
@@ -228,36 +242,15 @@ function checkSelected(value){
     else return false;
 }
 
-function checkIndexInList(index){
-    let output = elementStoneOptionsTemp.find((element)=>{
-        return element.id === index
-    })
-    console.log("OUTPUT: ",output)
-    return output
-}
-
-
-
-/*
-{id: 3, parentId: null}
-{id: 3, parentId: null}
-{id: 10, parentId: 3}
-{id: 12, parentId: 3}
-{id: 21, parentId: 12}
-{id: 30, parentId: 21}
-{id: 39, parentId: 30}
-*/
-
+// source: https://stackoverflow.com/questions/28160993/tree-recursion-how-to-get-the-parent-root-of-the-selected-tree-node
 function getPathToRoot(tree, startId) {
     const path = [];
     let currentNode = tree.find(node => node.id === startId);
-    console.log("Inside", currentNode)
     while (currentNode) {
-        path.push(currentNode); // Add the current node to the path
-        currentNode = tree.find(node => node.id === currentNode.parentId); // Find the parent node
+        path.push(currentNode); 
+        currentNode = tree.find(node => node.id === currentNode.parentId); 
     }
-
-    return path.reverse(); // Reverse the path to go from root to the starting node
+    return path.reverse(); 
 }
 
 function moveToNextTile(currentIndex, player){
@@ -265,17 +258,14 @@ function moveToNextTile(currentIndex, player){
     let listOfStoneToRemove2 = getPathToRoot(elementStoneOptionsTemp, Number(currentIndex))
     if(listOfStoneToRemove2.length>1 && listOfStoneToRemove2.at(-1).id === Number(currentIndex)){
         for (let i = 0; i < listOfStoneToRemove2.length; i++) {
-            console.log("ID", getBoardValue(listOfStoneToRemove2[i].id))
             if(getBoardValue(listOfStoneToRemove2[i].id).toLowerCase() === player.nextTurnSymbol){
                 listOfStoneToRemove.push(listOfStoneToRemove2[i].id)
             }
         }
     }
-    
     if(listOfStoneToRemove.length>0){
         for (let i = 0; i < listOfStoneToRemove.length; i++) {
             const removeTile = listOfStoneToRemove[i];
-            delete elementStoneOptions[currentIndex];
             tilesElements[removeTile].textContent = "";
             let poseRemove = getPoseFromIndex(removeTile);
             board[poseRemove[1]][poseRemove[0]] = "";
@@ -305,6 +295,17 @@ function TileReachOpponent(pose, player){
         tilesElements[index].textContent = player.king
     }
 }
+
+function checkWinner(){
+    if(player1.point === 12){
+        return player1.symbol
+    }else if(player2.point === 12){
+         return player2.symbol
+    }else{
+        return false
+    }
+}
+
 function play(indexID, pose, player){
     console.log(board[pose[1]][pose[0]])
     if (checkSelected(indexID) && selectedTile && blackTiles.length > 0){
@@ -312,6 +313,9 @@ function play(indexID, pose, player){
         playerTurn = player.nextTurnSymbol
     }else if (board[pose[1]][pose[0]].toLowerCase() === player.symbol){
         getNeighbor(indexID, player)
+        if(blackTiles.length === 0){
+            console.log("There is no space to move")
+        }
     }else{
         console.log("Select stone or go to valid choise")
         changeListToOrigin()
@@ -327,18 +331,49 @@ tilesElements.forEach((tile)=>{
         let pose = getPoseFromIndex(indexID)
         let poseSelected = getPoseFromIndex(selectedTile)
         // Check if both conditions 
-        if( playerTurn === player1.symbol){
-           play(indexID, pose, player1)
-           
-        }else if(playerTurn === player2.symbol){
+        if( playerTurn === player1.symbol && winner === false){
+            play(indexID, pose, player1)
+            
+        }else if(playerTurn === player2.symbol && winner === false){
             play(indexID, pose, player2)
         }else{
             changeListToOrigin()
             selectedTile = null
         }
-        
         updateMessage()
         updateResult()
+        winner = checkWinner();
+        if(winner){
+            messageElement.textContent = `The winner is ${winner}`
+        }
         console.log(board)
+        console.log(originalBoard)
     })
+})
+
+
+
+function checkAllMoves(player) {
+    elementStoneOptionsTemp = [];
+    blackTiles = [];
+    for (let y = 0; y < GRID_SIZE; y++) {
+        for (let x = 0; x < GRID_SIZE; x++) {
+            if (board[y][x].toLowerCase() === player.symbol) {
+                checkNeighbor([x, y], 1, player.nextTurnSymbol); // Forward direction
+                checkNeighbor([x, y], -1, player.nextTurnSymbol); // Backward direction
+            }
+        }
+    }
+}
+
+helpButtonElement.addEventListener('click', (event)=>{
+    if(playerTurn === 'r'){
+        checkAllMoves(player1)
+    }else{
+        checkAllMoves(player2)
+    }
+})
+
+resetButtonElement.addEventListener('click',(event)=>{
+    location.reload(true);
 })

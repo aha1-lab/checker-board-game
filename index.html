@@ -9,11 +9,14 @@
     <script defer src="./js/app.js"></script>
 </head>
 <body>
-    <h1>Checkers board game</h1>
+    <div class="banner">
+        <h1>Checkers Board Game</h1>
+    </div>
 
     <h2 class="message">Message</h2>
 
     <div class="main">
+        <!-- <div class="winning-banner"></div> -->
         <div class="players">
             <div class="player-name">Red Player</div>
             <div class="results">0</div>
@@ -24,6 +27,11 @@
             <div class="player-name">White Player</div>
             <div class="results">0</div>
         </div>
+    </div>
+    
+    <div class="buttons">
+        <button class="button" id="reset">Reset the game</button>
+        <button class="button" id="help">help</button>
     </div>
 </body>
 </html>
