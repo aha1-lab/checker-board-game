@@ -34,7 +34,7 @@ class Board{
             for (let j = 0; j < this.gridSize; j++) {
                 let tempTile = document.createElement("div");
                 if((i+j)%2 === 0) {
-                    tempTile.style.backgroundColor = "white"
+                    tempTile.style.backgroundColor = "gray"
                 }else{
                     tempTile.style.backgroundColor = "black"
                 }
@@ -55,6 +55,10 @@ class Board{
                     tilesElements[tempIndex].textContent = player1.circle
                 }else if(this.board[i][j] === player2.symbol){
                     tilesElements[tempIndex].textContent = player2.circle
+                }else if(this.board[i][j] === player1.symbol.toUpperCase()){
+                    tilesElements[tempIndex].textContent = player1.king
+                }else if(this.board[i][j] === player2.symbol.toUpperCase()){
+                    tilesElements[tempIndex].textContent = player2.king
                 }else{
                     tilesElements[tempIndex].textContent = ""
                 }
@@ -168,7 +172,7 @@ class Board{
         // console.log("reorde: ",SelectedList)
         if(SelectedList.length>1 && SelectedList.at(-1).id === Number(currentIndex)){
             for (let i = 0; i < SelectedList.length; i++) {
-                if(this.getBoardValue(SelectedList[i].id).toLowerCase() === player.nextTurnSymbol){
+                if(this.getBoardValue(SelectedList[i].id).toLowerCase() === player.opponent){
                     listOfStoneToRemove.push(SelectedList[i].id)
                 }
             }
@@ -197,6 +201,19 @@ class Board{
         this.TileReachOpponentDefenseLine(tilesElements, pose,player)
         this.changeListToOrigin(tilesElements);
         this.elementStoneOptionsTemp = []
+    }
+
+    getListOfMoves(player){
+        for (let i = 0; i < this.gridSize; i++) {
+            for (let j = 0; j < this.gridSize; j++) {
+                if(this.board[i][j] === player.symbol){
+                    console.log(this.getIndex([i,j]), i,j)
+                    let moves = this.checkNeighbor(this.getIndex([i,j]), player.direction,player.opponent)
+                    console.log(moves)
+                }
+            }
+            
+        }
     }
     
 }

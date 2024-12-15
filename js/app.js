@@ -1,50 +1,87 @@
-const redCircle = "🔴"
-const redCircleKing = "🟥"
-const whiteCircle = "⚪"
-const whiteCircleKing = "⬜"
-
-const greenCircle = "🟢"
-const yellowCircle = "🟡"
-const orangeCircle = "🟠"
-
-let GRID_SIZE = 8;
-const player1 = {
-    name : 'red',
-    circle : redCircle,
-    symbol : "r",
-    point : 0,
-    nextTurnSymbol: "w",
-    direction : -1,
-    opponentLastLine : 0,
-    king : redCircleKing
-}
-
-const player2 = {
-    name : 'white',
-    circle : whiteCircle,
-    symbol : "w",
-    point : 0,
-    nextTurnSymbol: "r",
-    direction : 1,
-    opponentLastLine : 7,
-    king : whiteCircleKing
-}
-
 const boardElement = document.querySelector(".board")
 const messageElement = document.querySelector('.message')
 const results = document.querySelectorAll(".results")
 const helpButtonElement = document.querySelector("#help")
 const resetButtonElement = document.querySelector("#reset")
+const winningBannerElement = document.querySelector(".winning-banner")
+const player1ColorsElements = document.querySelector(".color-1")
+const player2ColorsElements = document.querySelector(".color-2")
+
 let tilesElements = []
 let selectedTile = false
 let playerTurn = 'r'
 let winner = false
 
+const colors={
+    red:    {circle : "🔴", king : "🟥"},
+    white:  {circle : "⚪", king : "⬜"},
+    green:  {circle : "🟢", king : "🟩"},
+    yellow: {circle : "🟡", king : "🟨"},
+    orenge: {circle : "🟠", king : "🟧"}
+}
+const player1 = {
+    name : 'red',
+    circle : colors.red.circle,
+    symbol : "r",
+    point : 0,
+    opponent: "w",
+    direction : -1,
+    opponentLastLine : 0,
+    king : colors.red.king,
+}
+
+const player2 = {
+    name : 'white',
+    circle : colors.white.circle,
+    symbol : "w",
+    point : 0,
+    opponent: "r",
+    direction : 1,
+    opponentLastLine : 7,
+    king : colors.white.king
+}
+
+//------------Create the board and tiles------------------//
+const boardClass = new Board(8)
+tilesElements = boardClass.createBoard(tilesElements)
+boardClass.addStones(tilesElements,player1,player2)
+
+// boardClass.getListOfMoves(player1)
+// source : https://dev.to/rajatamil/dynamic-html-select-drop-down-list-using-javascript-4d72
+const updatedDropDownColor = (dropdownElement)=>{
+    for (const [key, value] of Object.entries(colors)) {
+        let option = document.createElement("option");
+        option.value = key
+        option.text = value.circle
+        dropdownElement.appendChild(option);
+    }
+}
+
+updatedDropDownColor(player1ColorsElements)
+updatedDropDownColor(player2ColorsElements)
+
+
+
+const selectColor = (colorList, player)=>{
+    colorList.addEventListener('change', (event)=>{
+        const selectedValue = event.target.value
+        player.circle = colors[selectedValue].circle
+        player.king = colors[selectedValue].king
+        boardClass.addStones(tilesElements,player1,player2)
+    })
+}
+
+selectColor(player1ColorsElements,player1)
+selectColor(player2ColorsElements,player2)
+
+
+
+
 const updateMessage = ()=>{
     if(playerTurn === player1.symbol)
-        messageElement.textContent = `player turn is: ${player1.name}`;
+        messageElement.textContent = `player turn is: Player 1`;
     else{
-        messageElement.textContent = `player turn is: ${player2.name}`;
+        messageElement.textContent = `player turn is: Player 2`;
     }
 }
 
@@ -55,35 +92,19 @@ const updateResult = ()=>{
 updateMessage()
 updateResult()
 
-//------------Create the board and tiles------------------//
-const boardClass = new Board(8)
-tilesElements = boardClass.createBoard(tilesElements)
-boardClass.addStones(tilesElements,player1,player2)
+
 
 
 //--- Helper function to get the list indexs of a certin player ---//
-function getListOfIndexs(player){
-    let listOfIndex = []
-    for (let i = 0; i < GRID_SIZE; i++) {
-        for (let j = 0; j < GRID_SIZE; j++) {
-            if(board[i][j] === player.symbol){
-                let tempIndex = getIndex([i,j])
-                listOfIndex.push(tempIndex)
-            }
-        }     
-    }
-    return listOfIndex;
-}
-
 function getNeighbor(index, player){
     let pose = boardClass.getPoseFromIndex(index)
     boardClass.changeListToOrigin(tilesElements)
     if(boardClass.board[pose[1]][pose[0]] === player.symbol.toUpperCase()){
-        const movesFront = boardClass.checkNeighbor(pose,player.direction, player.nextTurnSymbol)
-        const moveBack = boardClass.checkNeighbor(pose,player.direction * -1, player.nextTurnSymbol)
+        const movesFront = boardClass.checkNeighbor(pose,player.direction, player.opponent)
+        const moveBack = boardClass.checkNeighbor(pose,player.direction * -1, player.opponent)
         boardClass.moves.push(...movesFront, ...moveBack)
     }else{
-        boardClass.moves.push(...boardClass.checkNeighbor(pose,player.direction, player.nextTurnSymbol))
+        boardClass.moves.push(...boardClass.checkNeighbor(pose,player.direction, player.opponent))
     }
     boardClass.displayMovements(tilesElements, boardClass.moves)
 }
@@ -103,9 +124,10 @@ function play(indexID, pose, player){
     // if the tile selected and a new tile selected present in the blackList
     // we will go to the new position
     if (boardClass.checkSelected(indexID) && selectedTile && boardClass.blackTiles.length > 0
-        && boardClass.board[pose[1]][pose[0]].toLowerCase() !== player.nextTurnSymbol){
+        && boardClass.board[pose[1]][pose[0]].toLowerCase() !== player.opponent
+        && boardClass.board[pose[1]][pose[0]].toLowerCase() !== player.symbol){
         boardClass.moveToNextTile(tilesElements, indexID, selectedTile, player)
-        playerTurn = player.nextTurnSymbol
+        playerTurn = player.opponent
     }
     // here I will select the stones on the tiles and check if the stone belong 
     // to the player turn
@@ -141,26 +163,16 @@ tilesElements.forEach((tile)=>{
         updateResult()
         winner = checkWinner();
         if(winner){
-            messageElement.textContent = `The winner is ${winner}`
+            const winConentElement = document.querySelector("#win-content")
+            let winnerName = player1.symbol === winner ? "player 1" : "player 2"
+            messageElement.textContent = `The winner is ${winnerName}`
+            winningBannerElement.style.display= 'block'
+            winConentElement.textContent = `The winner is ${winnerName}`
         }
         // console.log(board)
     })
 })
 
-
-
-function checkAllMoves(player) {
-    elementStoneOptionsTemp = [];
-    blackTiles = [];
-    for (let y = 0; y < GRID_SIZE; y++) {
-        for (let x = 0; x < GRID_SIZE; x++) {
-            if (board[y][x].toLowerCase() === player.symbol) {
-                checkNeighbor([x, y], 1, player.nextTurnSymbol); // Forward direction
-                checkNeighbor([x, y], -1, player.nextTurnSymbol); // Backward direction
-            }
-        }
-    }
-}
 
 helpButtonElement.addEventListener('click', (event)=>{
     if(playerTurn === 'r'){

@@ -14,19 +14,39 @@
         <h1>Checkers Board Game</h1>
     </div>
 
+    <div class="dropdown">
+        <div class="selections">
+            <h4>Player 1 Color</h4>
+            <select name="colors"class="color-1">
+            </select>
+        </div>
+        <div class="selections">
+            <h4>Player 2 Color</h4>
+            <select name="colors"class="color-2">
+            </select>
+        </div>
+        
+    </div>
     <h2 class="message">Message</h2>
 
-    <div class="main">
-        <!-- <div class="winning-banner"></div> -->
-        <div class="players">
-            <div class="player-name">Red Player</div>
-            <div class="results">0</div>
+    <div class="wrapper">
+        <div class="main">
+            <div class="players">
+                <div class="player-name">Red Player</div>
+                <div class="results">0</div>
+            </div>
+            <div class="board">
+            </div>
+            <div class="players">
+                <div class="player-name">White Player</div>
+                <div class="results">0</div>
+            </div>
         </div>
-        <div class="board">
-        </div>
-        <div class="players">
-            <div class="player-name">White Player</div>
-            <div class="results">0</div>
+        <div class="winning-banner">
+            <div id="win">
+                <h1 id="win-content"></h1>
+            </div>
+
         </div>
     </div>
     
@@ -34,5 +54,6 @@
         <button class="button" id="reset">Reset the game</button>
         <button class="button" id="help">help</button>
     </div>
+
 </body>
 </html>

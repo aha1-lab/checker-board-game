@@ -15,15 +15,26 @@ h1{
 h2{
     text-align: center;
     color: white;
+    font-size: 2rem;
 }
 
-.main{
+h4{
+    color: white;
+    font-size: 1rem;
+}
+
+h3{
+    color: white;
+    font-size: 1.3rem;
+}
+
+.dropdown{
     display: flex;
-    flex-direction: row;
-    justify-content: space-evenly;  
-    align-items: center;
-}
 
+}
+.selections{
+    margin: 0 10px;
+}
 .players{
     display: flex;
     flex-direction: column;
@@ -62,6 +73,32 @@ h2{
 .buttons{
     display: flex;
     justify-content: center;
+    /* width: 250px; */
+}
+
+.checker-button{
+    margin-top: 40px;
+    /* background-image: url("../assets/images/checker.png"); */
+    width: 250;
+    height: 250
+    ;
+}
+
+.button-header{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.checker-button:hover{
+    background-color: rgba(120,120,120,1);
+}
+.game-buttons{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+    flex-wrap: wrap;
+
 }
 .button{
     font-size: 15px;
@@ -69,12 +106,47 @@ h2{
     height: 40px;
 }
 
-/* .winning-banner{
-    z-index: 3;
-    border: 1px solid black;
-    width: 500px;
-    height: 400px;
-} */
+.main{
+    z-index: 1;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;  
+    align-items: center;
+}
+
+.wrapper{
+    position: relative;
+}
+
+
+#win{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.winning-banner{
+    display: none;
+    position: relative;
+    z-index: 2;
+    background-color: #00a300;
+    width: auto;
+    height: 200px;
+
+    color: white;
+    font-size: 2rem;
+    text-align: center;
+    vertical-align: middle;
+
+}
+
+.dropdown{
+    margin-top: 20px;
+}
+
+.color{
+    width: 80px;
+    height: 30px;
+}
 @media(max-width: 550px){
     .tile{
         border: 1px solid black;
