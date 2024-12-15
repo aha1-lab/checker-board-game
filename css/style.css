@@ -82,7 +82,7 @@ h2{
         width: 11%;
         height: 12%;
         text-align: center;
-        align-items: center;
+        vertical-align: middle;
     }
     .board{
         width: 400px;
