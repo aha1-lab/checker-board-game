@@ -46,7 +46,14 @@ const boardClass = new Board(8)
 tilesElements = boardClass.createBoard(tilesElements)
 boardClass.addStones(tilesElements,player1,player2)
 
-// boardClass.getListOfMoves(player1)
+// let movesList = boardClass.getListOfMoves(player1)
+// let randomStone = boardClass.getRandomStone(movesList)
+// let randomMoveForStone = boardClass.getRandomMove(randomStone)
+
+// console.log("Random stone",randomStone)
+// console.log("random move",randomMoveForStone)
+
+
 // source : https://dev.to/rajatamil/dynamic-html-select-drop-down-list-using-javascript-4d72
 const updatedDropDownColor = (dropdownElement)=>{
     for (const [key, value] of Object.entries(colors)) {
@@ -61,7 +68,6 @@ updatedDropDownColor(player1ColorsElements)
 updatedDropDownColor(player2ColorsElements)
 
 
-
 const selectColor = (colorList, player)=>{
     colorList.addEventListener('change', (event)=>{
         const selectedValue = event.target.value
@@ -73,8 +79,6 @@ const selectColor = (colorList, player)=>{
 
 selectColor(player1ColorsElements,player1)
 selectColor(player2ColorsElements,player2)
-
-
 
 
 const updateMessage = ()=>{
@@ -118,6 +122,12 @@ function checkWinner(){
     }else{
         return false
     }
+}
+
+function PCPlayer(){
+    let movesList = boardClass.getListOfMoves(player2)
+    let randomStone = boardClass.getRandomStone(movesList)
+    let randomMoveForStone = boardClass.getRandomMove(randomStone)
 }
 
 function play(indexID, pose, player){

@@ -92,11 +92,11 @@ class Board{
             if(this.checkWithinBoundry(x,y) /*&& depth<= 3*/){
                 let neighbot = this.getIndex([y,x])
                 if(this.board[y][x] === "" && depth === 0){
-                    avialbleMoves.push({position:[y,x], color:"green", id:neighbot, parentId: this.getIndex([pose[1],pose[0]])})
+                    avialbleMoves.push({position:[y,x], color:"green", id:neighbot, parentId: this.getIndex([pose[1],pose[0]]), stone:false})
                 }
                 else if(this.board[y][x].toLowerCase() === opponent) {
                     if(depth < 2){
-                        avialbleMoves.push({position:[y,x], color:"blue", id:neighbot, parentId: this.getIndex([pose[1],pose[0]])})
+                        avialbleMoves.push({position:[y,x], color:"blue", id:neighbot, parentId: this.getIndex([pose[1],pose[0]]), stone:true})
                     }
                     const x1 = x +i
                     const y1 = y + direction
@@ -105,7 +105,7 @@ class Board{
                         
                         if(this.board[y1][x1] === "")
                         {
-                            avialbleMoves.push({position:[y1,x1], color:"red", id:neighbotOpennet, parentId: this.getIndex([y,x])})
+                            avialbleMoves.push({position:[y1,x1], color:"red", id:neighbotOpennet, parentId: this.getIndex([y,x]), stone:false})
                             const nextMove = this.checkNeighbor([x1,y1], direction, opponent, depth + 1)
                             avialbleMoves.push(...nextMove);
                         }
@@ -134,7 +134,9 @@ class Board{
     displayMovements(tilesElements, moves){
         this.blackTiles = []
         moves.forEach((move)=>{
-            tilesElements[move.id].style.backgroundColor=move.color
+            if (!move.stone){
+                tilesElements[move.id].style.backgroundColor=move.color
+            }
             this.blackTiles.push(move.id)
             if(move.parentId !== null){
                 // tilesElements[move.parentId].style.backgroundColor="blue"
@@ -204,16 +206,32 @@ class Board{
     }
 
     getListOfMoves(player){
+        let movementsForEachStone = []
         for (let i = 0; i < this.gridSize; i++) {
             for (let j = 0; j < this.gridSize; j++) {
                 if(this.board[i][j] === player.symbol){
-                    console.log(this.getIndex([i,j]), i,j)
-                    let moves = this.checkNeighbor(this.getIndex([i,j]), player.direction,player.opponent)
-                    console.log(moves)
+                    let index = this.getIndex([i,j])
+                    let moves = this.checkNeighbor([j,i], player.direction,player.opponent)
+                    if(moves.length > 0){
+                        movementsForEachStone.push({id:index, moves:moves})
+                    }
                 }
-            }
-            
+            }  
         }
+        return movementsForEachStone
+    }
+
+    getRandomMove(currentStoneRandom){
+        let randomID = Math.floor(Math.random()*currentStoneRandom.moves.length)
+        let movePosition = currentStoneRandom.moves[randomID]
+        // console.log(randomID, movePosition)
+        return movePosition
+    }
+    getRandomStone(movesList){
+        let randomID = Math.floor(Math.random()*movesList.length)
+        let currentStoneRandom = movesList[randomID]
+        // console.log(randomID, currentStoneRandom)
+        return currentStoneRandom
     }
     
 }
