@@ -128,14 +128,15 @@ function delay(seconds, callback) {
 }
 
 function PCPlayer(){
+    updateMessage()
     let movesList = boardClass.getListOfMoves(player2)
     const filteredMovesList = movesList.filter((list)=>{
         return list.moves.every((move)=>{
             return move.stone !== true
         })
     })
-    console.log(movesList)
-    console.log(filteredMovesList)
+    // console.log(movesList)
+    // console.log(filteredMovesList)
 
     if(movesList.length > 0){
         let randomStone = boardClass.getRandomStone(movesList)

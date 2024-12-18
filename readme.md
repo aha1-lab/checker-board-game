@@ -6,7 +6,7 @@ Checker game is an old game use a board divided into 8x8 tiles, and use 24 stone
 The idea of the game is to captures the opponent stones by jumping over the stone. 
 
 ## Getting started:
-to access the game press here[press here](https://aha1-lab.github.io/checker-board-game/)
+to access the game press here [press here](https://aha1-lab.github.io/checker-board-game/)
 
 To play this game two player required player1 and player2, the stone color can be change as you like.
 
