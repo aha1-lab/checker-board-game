@@ -6,12 +6,13 @@ const resetButtonElement = document.querySelector("#reset")
 const winningBannerElement = document.querySelector(".winning-banner")
 const player1ColorsElements = document.querySelector(".color-1")
 const player2ColorsElements = document.querySelector(".color-2")
+const gameModeElement = document.querySelector(".game-mode")
 
 let tilesElements = []
 let selectedTile = false
 let playerTurn = 'r'
 let winner = false
-
+let gameMode = 0 // 1: for PC game and 2: for two player
 const colors={
     red:    {circle : "🔴", king : "🟥"},
     white:  {circle : "⚪", king : "⬜"},
@@ -46,13 +47,6 @@ const boardClass = new Board(8)
 tilesElements = boardClass.createBoard(tilesElements)
 boardClass.addStones(tilesElements,player1,player2)
 
-// let movesList = boardClass.getListOfMoves(player1)
-// let randomStone = boardClass.getRandomStone(movesList)
-// let randomMoveForStone = boardClass.getRandomMove(randomStone)
-
-// console.log("Random stone",randomStone)
-// console.log("random move",randomMoveForStone)
-
 
 // source : https://dev.to/rajatamil/dynamic-html-select-drop-down-list-using-javascript-4d72
 const updatedDropDownColor = (dropdownElement)=>{
@@ -80,6 +74,10 @@ const selectColor = (colorList, player)=>{
 selectColor(player1ColorsElements,player1)
 selectColor(player2ColorsElements,player2)
 
+gameModeElement.addEventListener('change',(event)=>{
+    gameMode = Number(event.target.value)
+    // console.log(gameMode)
+})
 
 const updateMessage = ()=>{
     if(playerTurn === player1.symbol)
@@ -101,6 +99,7 @@ updateResult()
 
 //--- Helper function to get the list indexs of a certin player ---//
 function getNeighbor(index, player){
+    console.log(index)
     let pose = boardClass.getPoseFromIndex(index)
     boardClass.changeListToOrigin(tilesElements)
     if(boardClass.board[pose[1]][pose[0]] === player.symbol.toUpperCase()){
@@ -124,11 +123,43 @@ function checkWinner(){
     }
 }
 
+function delay(seconds, callback) {
+    setTimeout(callback, seconds * 1000);
+}
+
 function PCPlayer(){
     let movesList = boardClass.getListOfMoves(player2)
-    let randomStone = boardClass.getRandomStone(movesList)
-    let randomMoveForStone = boardClass.getRandomMove(randomStone)
+    const filteredMovesList = movesList.filter((list)=>{
+        return list.moves.every((move)=>{
+            return move.stone !== true
+        })
+    })
+    console.log(movesList)
+    console.log(filteredMovesList)
+
+    if(movesList.length > 0){
+        let randomStone = boardClass.getRandomStone(movesList)
+        let randomMoveForStone = boardClass.getRandomMove(randomStone)
+        console.log("Random stone:", randomStone.id, randomStone.moves)
+        boardClass.moves = randomStone.moves
+        boardClass.displayMovements(tilesElements, boardClass.moves)
+        delay(2, () => {
+            boardClass.moveToNextTile(tilesElements,randomMoveForStone.id, randomStone.id , player2)
+            updateResult()
+        });
+        playerTurn = player2.opponent
+    }else{
+        winner = checkWinner();
+        if(winner){
+            const winConentElement = document.querySelector("#win-content")
+            let winnerName = player1.symbol === winner ? "player 1" : "player 2"
+            messageElement.textContent = `The winner is ${winnerName}`
+            winningBannerElement.style.display= 'block'
+            winConentElement.textContent = `The winner is ${winnerName}`
+        }
+    }
 }
+
 
 function play(indexID, pose, player){
     // if the tile selected and a new tile selected present in the blackList
@@ -138,6 +169,9 @@ function play(indexID, pose, player){
         && boardClass.board[pose[1]][pose[0]].toLowerCase() !== player.symbol){
         boardClass.moveToNextTile(tilesElements, indexID, selectedTile, player)
         playerTurn = player.opponent
+        if(gameMode === 1){
+            PCPlayer()
+        }
     }
     // here I will select the stones on the tiles and check if the stone belong 
     // to the player turn
@@ -152,34 +186,39 @@ function play(indexID, pose, player){
         selectedTile = null
     }
     selectedTile = indexID;
+    updateMessage()
+    updateResult()
+    winner = checkWinner();
+    if(winner){
+        const winConentElement = document.querySelector("#win-content")
+        let winnerName = player1.symbol === winner ? "player 1" : "player 2"
+        messageElement.textContent = `The winner is ${winnerName}`
+        winningBannerElement.style.display= 'block'
+        winConentElement.textContent = `The winner is ${winnerName}`
+    }
 }
 
 tilesElements.forEach((tile)=>{
     tile.addEventListener('click',(event)=>{
-        let indexID = event.target.id
-        let pose = boardClass.getPoseFromIndex(indexID)
-        console.log(`Pressed tile infor: ${(indexID)} and Pose: ${pose}`)
-        // Check if both conditions 
-        if( playerTurn === player1.symbol && winner === false){
-            play(indexID, pose, player1)
-            
-        }else if(playerTurn === player2.symbol && winner === false){
-            play(indexID, pose, player2)
+        if(gameMode !== 0){
+            let indexID = event.target.id
+            let pose = boardClass.getPoseFromIndex(indexID)
+            console.log(`Pressed tile infor: ${(indexID)} and Pose: ${pose}`)
+            // Check if both conditions 
+            if( playerTurn === player1.symbol && winner === false){
+                play(indexID, pose, player1)
+                
+            }else if(playerTurn === player2.symbol && winner === false){
+                play(indexID, pose, player2)
+            }else{
+                boardClass.changeListToOrigin(tilesElements)
+                selectedTile = null
+            }
+            // console.log(board)
         }else{
-            boardClass.changeListToOrigin(tilesElements)
-            selectedTile = null
+            console.log("please select game mode")
         }
-        updateMessage()
-        updateResult()
-        winner = checkWinner();
-        if(winner){
-            const winConentElement = document.querySelector("#win-content")
-            let winnerName = player1.symbol === winner ? "player 1" : "player 2"
-            messageElement.textContent = `The winner is ${winnerName}`
-            winningBannerElement.style.display= 'block'
-            winConentElement.textContent = `The winner is ${winnerName}`
-        }
-        // console.log(board)
+        
     })
 })
 

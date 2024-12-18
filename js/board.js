@@ -209,9 +209,9 @@ class Board{
         let movementsForEachStone = []
         for (let i = 0; i < this.gridSize; i++) {
             for (let j = 0; j < this.gridSize; j++) {
-                if(this.board[i][j] === player.symbol){
+                if(this.board[i][j].toLowerCase() === player.symbol){
                     let index = this.getIndex([i,j])
-                    let moves = this.checkNeighbor([j,i], player.direction,player.opponent)
+                    let moves = this.checkNeighbor([j,i], player.direction, player.opponent)
                     if(moves.length > 0){
                         movementsForEachStone.push({id:index, moves:moves})
                     }
@@ -222,15 +222,18 @@ class Board{
     }
 
     getRandomMove(currentStoneRandom){
-        let randomID = Math.floor(Math.random()*currentStoneRandom.moves.length)
-        let movePosition = currentStoneRandom.moves[randomID]
-        // console.log(randomID, movePosition)
+
+        const validMoves = currentStoneRandom.moves.filter((move)=>{
+            return !move.stone
+        })
+        let randomID = Math.floor(Math.random()*validMoves.length)
+        let movePosition = validMoves[randomID]
         return movePosition
     }
+
     getRandomStone(movesList){
         let randomID = Math.floor(Math.random()*movesList.length)
         let currentStoneRandom = movesList[randomID]
-        // console.log(randomID, currentStoneRandom)
         return currentStoneRandom
     }
     
